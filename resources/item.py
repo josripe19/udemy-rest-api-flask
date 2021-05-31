@@ -3,11 +3,6 @@ from flask_jwt import jwt_required
 from models.item import ItemModel
 
 
-class Items(Resource):
-    def get(self):
-        return {'items': [item.json() for item in ItemModel.query.all()]}
-
-
 class Item(Resource):
     parser = reqparse.RequestParser()
     parser.add_argument('price',
@@ -58,3 +53,8 @@ class Item(Resource):
 
         item.upsert()
         return item.json()
+
+
+class Items(Resource):
+    def get(self):
+        return {'items': [item.json() for item in ItemModel.get_all()]}
