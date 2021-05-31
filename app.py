@@ -15,6 +15,12 @@ app.config['PROPAGATE_EXCEPTIONS'] = True  # To allow flask propagating exceptio
 app.secret_key = 'secret'
 api = Api(app)
 
+
+@app.before_first_request
+def create_tables():
+    db.create_all()
+
+
 app.config['JWT_AUTH_HEADER_PREFIX'] = 'Bearer'
 app.config['JWT_VERIFY_EXPIRATION'] = False
 jwt = JWT(app, authenticate, identity)  # this generates a POST /auth endpoint
