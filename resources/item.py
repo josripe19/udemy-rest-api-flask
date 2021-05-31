@@ -14,6 +14,10 @@ class Item(Resource):
                         type=float,
                         required=True
                         )
+    parser.add_argument('store_id',
+                        type=int,
+                        required=True
+                        )
 
     def get(self, name):
         item = ItemModel.find_item(name)
@@ -29,7 +33,7 @@ class Item(Resource):
 
         data = Item.parser.parse_args()
 
-        new_item = ItemModel(name, data['price'])
+        new_item = ItemModel(name, **data)
         new_item.upsert()
 
         return new_item.json(), 201
@@ -50,7 +54,7 @@ class Item(Resource):
         if item:
             item.price = data['price']
         else:
-            item = ItemModel(name, data['price'])
+            item = ItemModel(name, **data)
 
         item.upsert()
         return item.json()

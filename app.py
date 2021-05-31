@@ -5,6 +5,7 @@ from flask_jwt import JWT
 from resources.user import UserRegister
 from security import authenticate, identity
 from resources.item import Items, Item
+from resources.store import Stores, Store
 from db import db
 
 
@@ -27,7 +28,11 @@ jwt = JWT(app, authenticate, identity)  # this generates a POST /auth endpoint
 
 api.add_resource(Item, '/item/<string:name>')
 api.add_resource(Items, '/items')
+api.add_resource(Store, '/store/<string:name>')
+api.add_resource(Stores, '/stores')
 api.add_resource(UserRegister, '/register')
 
-db.init_app(app)
-app.run()
+
+if __name__ == '__main__':
+    db.init_app(app)
+    app.run()
