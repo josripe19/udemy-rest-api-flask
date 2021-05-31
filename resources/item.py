@@ -39,31 +39,27 @@ class Item(Resource):
         data = Item.parser.parse_args()
 
         new_item = ItemModel(name, data['price'])
-        new_item.insert()
+        new_item.upsert()
 
         return new_item.json(), 201
 
     @jwt_required()
     def delete(self, name):
-        connection = sqlite3.connect('data.db')
-        cursor = connection.cursor()
+        item = ItemModel.find_item(name)
+        if item:
+            item.delete()
 
-        query = "DELETE FROM items WHERE name = ?"
-        cursor.execute(query, (name,))
-
-        connection.commit()
-        connection.close()
         return {'message': 'Item deleted'}
 
     @jwt_required()
     def put(self, name):
         data = Item.parser.parse_args()
         item = ItemModel.find_item(name)
-        new_or_updated = ItemModel(name, data['price'])
 
         if item:
-            new_or_updated.update()
+            item.price = data['price']
         else:
-            new_or_updated.insert()
+            item = ItemModel(name, data['price'])
 
-        return new_or_updated.json()
+        item.upsert()
+        return item.json()
