@@ -33,6 +33,11 @@ api.add_resource(Stores, '/stores')
 api.add_resource(UserRegister, '/register')
 
 
+@app.route('/')
+def home():
+    return "Hello World"
+
+
 # if __name__ == '__main__':
 db.init_app(app)
 app.run()
