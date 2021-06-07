@@ -33,6 +33,6 @@ api.add_resource(Stores, '/stores')
 api.add_resource(UserRegister, '/register')
 
 
-if __name__ == '__main__':
-    db.init_app(app)
-    app.run()
+# if __name__ == '__main__':
+db.init_app(app)
+app.run()
