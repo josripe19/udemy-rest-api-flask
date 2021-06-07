@@ -38,6 +38,6 @@ def home():
     return "Hello World"
 
 
-# if __name__ == '__main__':
-db.init_app(app)
-app.run()
+if __name__ == '__main__':
+    db.init_app(app)
+    app.run()
