@@ -46,6 +46,7 @@ class UserLogin(Resource):
 class User(Resource):
     @staticmethod
     @jwt_required()
+    @admin_required
     def get(user_id: int):
         user = UserModel.find_by_id(user_id)
         if not user:
