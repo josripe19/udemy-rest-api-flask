@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, create_access_token, create_refresh
 from flask_restful import Resource, reqparse
 
 from models.user import UserModel
+from resources.security import admin_required
 
 
 _user_parser = reqparse.RequestParser()
@@ -29,7 +30,11 @@ class UserLogin(Resource):
         data = _user_parser.parse_args()
         user = UserModel.find_by_username(data['username'])
         if user and compare_digest(user.password, data['password']):
-            access_token = create_access_token(identity=user.id, fresh=True)
+            additional_claims = {
+                'username': user.username,
+                'admin': user.admin
+            }
+            access_token = create_access_token(identity=user.id, fresh=True, additional_claims=additional_claims)
             refresh_token = create_refresh_token(user.id)
             return {
                 'access_token': access_token,
@@ -49,6 +54,7 @@ class User(Resource):
 
     @staticmethod
     @jwt_required()
+    @admin_required
     def delete(user_id: int):
         user = UserModel.find_by_id(user_id)
         if not user:
@@ -60,5 +66,6 @@ class User(Resource):
 class Users(Resource):
     @staticmethod
     @jwt_required()
+    @admin_required
     def get():
         return {'users': [user.json() for user in UserModel.get_all()]}
