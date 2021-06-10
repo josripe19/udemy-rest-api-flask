@@ -1,6 +1,7 @@
 from hmac import compare_digest
-from flask_jwt_extended import jwt_required, create_access_token, create_refresh_token
+from flask_jwt_extended import jwt_required, create_access_token, create_refresh_token, get_jwt_identity
 from flask_restful import Resource, reqparse
+from datetime import timedelta
 
 from models.user import UserModel
 from resources.security import admin_required
@@ -34,12 +35,16 @@ class UserLogin(Resource):
                 'username': user.username,
                 'admin': user.admin
             }
-            access_token = create_access_token(identity=user.id, fresh=True, additional_claims=additional_claims)
+            access_token = create_access_token(
+                identity=user.id,
+                fresh=True,
+                additional_claims=additional_claims,
+                expires_delta=timedelta(hours=2))
             refresh_token = create_refresh_token(user.id)
             return {
-                'access_token': access_token,
-                'refresh_token': refresh_token
-            }, 200
+                       'access_token': access_token,
+                       'refresh_token': refresh_token
+                   }, 200
         return {'message': 'Invalid credentials'}, 401
 
 
@@ -54,7 +59,7 @@ class User(Resource):
         return user.json()
 
     @staticmethod
-    @jwt_required()
+    @jwt_required(fresh=True)
     @admin_required
     def delete(user_id: int):
         user = UserModel.find_by_id(user_id)
@@ -70,3 +75,19 @@ class Users(Resource):
     @admin_required
     def get():
         return {'users': [user.json() for user in UserModel.get_all()]}
+
+
+class TokenRefresh(Resource):
+    @jwt_required(refresh=True)
+    def post(self):
+        current_user = UserModel.find_by_id(get_jwt_identity())
+        if current_user:
+            additional_claims = {
+                'username': current_user.username,
+                'admin': current_user.admin
+            }
+            access_token = create_access_token(identity=current_user.id,
+                                               fresh=False,
+                                               additional_claims=additional_claims,
+                                               expires_delta=timedelta(hours=2))
+            return {'access_token': access_token}, 200
