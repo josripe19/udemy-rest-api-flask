@@ -2,10 +2,9 @@ import os
 
 from flask import Flask
 from flask_restful import Api
-from flask_jwt import JWT
+from flask_jwt_extended import JWTManager
 
-from resources.user import UserRegister, User, Users
-from security import authenticate, identity
+from resources.user import UserRegister, User, Users, UserLogin
 from resources.item import Items, Item
 from resources.store import Stores, Store
 from db import db
@@ -24,15 +23,17 @@ def create_tables():
     db.create_all()
 
 
-app.config['JWT_AUTH_HEADER_PREFIX'] = 'Bearer'
-app.config['JWT_VERIFY_EXPIRATION'] = False
-jwt = JWT(app, authenticate, identity)  # this generates a POST /auth endpoint
+# app.config['JWT_AUTH_HEADER_PREFIX'] = 'Bearer'
+# app.config['JWT_VERIFY_EXPIRATION'] = False
+# jwt = JWT(app, authenticate, identity)  # this generates a POST /auth endpoint
+jwt = JWTManager(app)
 
 api.add_resource(Item, '/item/<string:name>')
 api.add_resource(Items, '/items')
 api.add_resource(Store, '/store/<string:name>')
 api.add_resource(Stores, '/stores')
 api.add_resource(UserRegister, '/register')
+api.add_resource(UserLogin, '/login')
 api.add_resource(Users, '/users')
 api.add_resource(User, '/user/<int:user_id>')
 
