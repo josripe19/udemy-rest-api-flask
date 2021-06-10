@@ -28,6 +28,16 @@ def create_tables():
 # jwt = JWT(app, authenticate, identity)  # this generates a POST /auth endpoint
 jwt = JWTManager(app)
 
+
+# --------------  some possible callbacks  ------------------
+# @jwt.invalid_token_loader
+# @jwt.expired_token_loader
+# @jwt.unauthorized_loader
+# @jwt.revoked_token_loader
+# @jwt.token_in_blocklist_loader
+# @jwt.needs_fresh_token_loader
+
+
 api.add_resource(Item, '/item/<string:name>')
 api.add_resource(Items, '/items')
 api.add_resource(Store, '/store/<string:name>')
