@@ -1,0 +1,12 @@
+version: "3.7"
+
+services:
+  api:
+    image: udemy-flask-app
+    container_name: flask-store
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - 5000:5000
+    environment:
+      FLASK_ENV: development
