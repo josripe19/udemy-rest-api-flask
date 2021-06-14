@@ -3,3 +3,4 @@ data.db
 .idea
 *.pyc
 .vscode
+.env

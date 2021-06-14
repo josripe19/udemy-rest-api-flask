@@ -1,5 +1,3 @@
-import os
-
 from flask import Flask
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
@@ -7,11 +5,11 @@ from flask_jwt_extended import JWTManager
 from resources.user import UserRegister, User, Users, UserLogin, TokenRefresh
 from resources.item import Items, Item
 from resources.store import Stores, Store
-from db import db
+from db import db, load_database_url
 
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///data.db').replace('postgres', 'postgresql')
+app.config['SQLALCHEMY_DATABASE_URI'] = load_database_url()
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['PROPAGATE_EXCEPTIONS'] = True  # To allow flask propagating exception even if debug is set to false on app
 app.secret_key = 'secret'
