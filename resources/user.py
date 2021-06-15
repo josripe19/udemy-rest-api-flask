@@ -1,4 +1,3 @@
-from hmac import compare_digest
 from flask_jwt_extended import jwt_required, create_access_token, create_refresh_token, get_jwt_identity
 from flask_restful import Resource, reqparse
 from datetime import timedelta
@@ -20,7 +19,9 @@ class UserRegister(Resource):
         if UserModel.find_by_username(data['username']):
             return {'message': 'The username is already used'}, 400
 
-        UserModel(**data).save_to_db()
+        user = UserModel(data['username'])
+        user.set_password(data['password'])
+        user.save_to_db()
 
         return {'message': 'User created successfully'}, 201
 
@@ -30,7 +31,7 @@ class UserLogin(Resource):
     def post():
         data = _user_parser.parse_args()
         user = UserModel.find_by_username(data['username'])
-        if user and compare_digest(user.password, data['password']):
+        if user and user.check_password(data['password']):
             additional_claims = {
                 'username': user.username,
                 'admin': user.admin

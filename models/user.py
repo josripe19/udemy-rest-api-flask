@@ -1,4 +1,5 @@
 from typing import List
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from db import db
 
@@ -8,12 +9,11 @@ class UserModel(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80))
-    password = db.Column(db.String(80))
+    password = db.Column(db.String(128))
     admin = db.Column(db.Boolean, default=False)
 
-    def __init__(self, username, password, admin=False):
+    def __init__(self, username, admin=False):
         self.username = username
-        self.password = password
         self.admin = admin
 
     def __str__(self):
@@ -25,6 +25,12 @@ class UserModel(db.Model):
             'username': self.username,
             'admin': self.admin
         }
+
+    def set_password(self, password):
+        self.password = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password, password)
 
     def save_to_db(self):
         db.session.add(self)
