@@ -13,15 +13,17 @@ class Item(Resource):
     parser.add_argument('price', type=float, required=True)
     parser.add_argument('store_id', type=int, required=True)
 
-    def get(self, name: str):
+    @staticmethod
+    def get(name: str):
         item = ItemModel.find_item(name)
 
         if item:
             return item.json()
         return {'message': ITEM_NOT_FOUND}, 404
 
+    @staticmethod
     @jwt_required()
-    def post(self, name: str):
+    def post(name: str):
         if ItemModel.find_item(name):
             return {'message': ALREADY_EXISTS.format(name)}, 400
 
@@ -32,16 +34,18 @@ class Item(Resource):
 
         return new_item.json(), 201
 
+    @staticmethod
     @jwt_required()
-    def delete(self, name: str):
+    def delete(name: str):
         item = ItemModel.find_item(name)
         if item:
             item.delete()
 
         return {'message': ITEM_DELETED}
 
+    @staticmethod
     @jwt_required()
-    def put(self, name: str):
+    def put(name: str):
         data = Item.parser.parse_args()
         item = ItemModel.find_item(name)
 

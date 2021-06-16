@@ -9,15 +9,17 @@ STORE_DELETED = "Store deleted"
 
 
 class Store(Resource):
-    def get(self, name: str):
+    @staticmethod
+    def get(name: str):
         store = StoreModel.find_item(name)
 
         if store:
             return store.json()
         return {'message': STORE_NOT_FOUND}, 404
 
+    @staticmethod
     @jwt_required()
-    def post(self, name: str):
+    def post(name: str):
         if StoreModel.find_item(name):
             return {'message': ALREADY_EXISTS.format(name)}, 400
 
@@ -26,8 +28,9 @@ class Store(Resource):
 
         return new_store.json(), 201
 
+    @staticmethod
     @jwt_required()
-    def delete(self, name: str):
+    def delete(name: str):
         store = StoreModel.find_item(name)
         if store:
             store.delete()
@@ -36,5 +39,6 @@ class Store(Resource):
 
 
 class Stores(Resource):
-    def get(self):
+    @staticmethod
+    def get():
         return {'stores': [store.json() for store in StoreModel.query.all()]}

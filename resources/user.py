@@ -85,8 +85,9 @@ class Users(Resource):
 
 
 class TokenRefresh(Resource):
+    @staticmethod
     @jwt_required(refresh=True)
-    def post(self):
+    def post():
         current_user = UserModel.find_by_id(get_jwt_identity())
         if current_user:
             additional_claims = {
