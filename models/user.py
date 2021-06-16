@@ -1,7 +1,9 @@
-from typing import List, Dict
+from typing import List, Dict, Union
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from db import db
+
+UserJSON = Dict[str, Union[int, str]]
 
 
 class UserModel(db.Model):
@@ -19,7 +21,7 @@ class UserModel(db.Model):
     def __str__(self):
         return f"<User id: {self.id}, username: {self.username}>"
 
-    def json(self) -> Dict:
+    def json(self) -> UserJSON:
         return {
             'id': self.id,
             'username': self.username,
