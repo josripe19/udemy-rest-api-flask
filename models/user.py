@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from db import db
@@ -12,24 +12,24 @@ class UserModel(db.Model):
     password = db.Column(db.String(128))
     admin = db.Column(db.Boolean, default=False)
 
-    def __init__(self, username, admin=False):
+    def __init__(self, username: str, admin=False):
         self.username = username
         self.admin = admin
 
     def __str__(self):
         return f"<User id: {self.id}, username: {self.username}>"
 
-    def json(self):
+    def json(self) -> Dict:
         return {
             'id': self.id,
             'username': self.username,
             'admin': self.admin
         }
 
-    def set_password(self, password):
+    def set_password(self, password: str):
         self.password = generate_password_hash(password)
 
-    def check_password(self, password):
+    def check_password(self, password: str) -> bool:
         return check_password_hash(self.password, password)
 
     def save_to_db(self):

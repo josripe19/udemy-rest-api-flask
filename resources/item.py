@@ -14,7 +14,7 @@ class Item(Resource):
                         required=True
                         )
 
-    def get(self, name):
+    def get(self, name: str):
         item = ItemModel.find_item(name)
 
         if item:
@@ -22,7 +22,7 @@ class Item(Resource):
         return {'message': 'Item not found'}, 404
 
     @jwt_required()
-    def post(self, name):
+    def post(self, name: str):
         if ItemModel.find_item(name):
             return {'message': f"An item with name {name} already exists."}, 400
 
@@ -34,7 +34,7 @@ class Item(Resource):
         return new_item.json(), 201
 
     @jwt_required()
-    def delete(self, name):
+    def delete(self, name: str):
         item = ItemModel.find_item(name)
         if item:
             item.delete()
@@ -42,7 +42,7 @@ class Item(Resource):
         return {'message': 'Item deleted'}
 
     @jwt_required()
-    def put(self, name):
+    def put(self, name: str):
         data = Item.parser.parse_args()
         item = ItemModel.find_item(name)
 

@@ -1,3 +1,4 @@
+from typing import Dict, List
 from db import db
 
 
@@ -9,14 +10,14 @@ class StoreModel(db.Model):
 
     items = db.relationship('ItemModel', lazy='dynamic')
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         self.name = name
 
-    def json(self):
+    def json(self) -> Dict:
         return {'id': self.id, 'name': self.name, 'items': [item.json() for item in self.items.all()]}
 
     @classmethod
-    def find_item(cls, name):
+    def find_item(cls, name: str) -> 'StoreModel':
         return cls.query.filter_by(name=name).first()
 
     def upsert(self):
@@ -28,5 +29,5 @@ class StoreModel(db.Model):
         db.session.commit()
 
     @classmethod
-    def get_all(cls):
+    def get_all(cls) -> List['StoreModel']:
         return cls.query.all()
