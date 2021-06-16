@@ -3,6 +3,10 @@ from flask_jwt_extended import jwt_required
 
 from models.store import StoreModel
 
+ALREADY_EXISTS = "A store with name {} already exists."
+STORE_NOT_FOUND = "Store not found"
+STORE_DELETED = "Store deleted"
+
 
 class Store(Resource):
     def get(self, name: str):
@@ -10,12 +14,12 @@ class Store(Resource):
 
         if store:
             return store.json()
-        return {'message': 'Item not found'}, 404
+        return {'message': STORE_NOT_FOUND}, 404
 
     @jwt_required()
     def post(self, name: str):
         if StoreModel.find_item(name):
-            return {'message': f"A store with name {name} already exists."}, 400
+            return {'message': ALREADY_EXISTS.format(name)}, 400
 
         new_store = StoreModel(name)
         new_store.upsert()
@@ -28,7 +32,7 @@ class Store(Resource):
         if store:
             store.delete()
 
-        return {'message': 'Store deleted'}
+        return {'message': STORE_DELETED}
 
 
 class Stores(Resource):

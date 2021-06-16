@@ -3,28 +3,27 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.item import ItemModel
 
 
+ALREADY_EXISTS = "An item with name '{}' already exists."
+ITEM_NOT_FOUND = "Item not found"
+ITEM_DELETED = "Item deleted"
+
+
 class Item(Resource):
     parser = reqparse.RequestParser()
-    parser.add_argument('price',
-                        type=float,
-                        required=True
-                        )
-    parser.add_argument('store_id',
-                        type=int,
-                        required=True
-                        )
+    parser.add_argument('price', type=float, required=True)
+    parser.add_argument('store_id', type=int, required=True)
 
     def get(self, name: str):
         item = ItemModel.find_item(name)
 
         if item:
             return item.json()
-        return {'message': 'Item not found'}, 404
+        return {'message': ITEM_NOT_FOUND}, 404
 
     @jwt_required()
     def post(self, name: str):
         if ItemModel.find_item(name):
-            return {'message': f"An item with name {name} already exists."}, 400
+            return {'message': ALREADY_EXISTS.format(name)}, 400
 
         data = Item.parser.parse_args()
 
@@ -39,7 +38,7 @@ class Item(Resource):
         if item:
             item.delete()
 
-        return {'message': 'Item deleted'}
+        return {'message': ITEM_DELETED}
 
     @jwt_required()
     def put(self, name: str):

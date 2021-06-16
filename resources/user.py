@@ -11,6 +11,12 @@ _user_parser.add_argument('username', type=str, required=True)
 _user_parser.add_argument('password', type=str, required=True)
 
 
+USER_CREATED = "User created successfully"
+INVALID_CREDENTIALS = "Invalid credentials"
+USER_NOT_FOUND = "User not found"
+USER_DELETED = "User deleted"
+
+
 class UserRegister(Resource):
     @staticmethod
     def post():
@@ -23,7 +29,7 @@ class UserRegister(Resource):
         user.set_password(data['password'])
         user.save_to_db()
 
-        return {'message': 'User created successfully'}, 201
+        return {'message': USER_CREATED}, 201
 
 
 class UserLogin(Resource):
@@ -46,7 +52,7 @@ class UserLogin(Resource):
                        'access_token': access_token,
                        'refresh_token': refresh_token
                    }, 200
-        return {'message': 'Invalid credentials'}, 401
+        return {'message': INVALID_CREDENTIALS}, 401
 
 
 class User(Resource):
@@ -56,7 +62,7 @@ class User(Resource):
     def get(user_id: int):
         user = UserModel.find_by_id(user_id)
         if not user:
-            return {'message': 'User not found'}, 404
+            return {'message': USER_NOT_FOUND}, 404
         return user.json()
 
     @staticmethod
@@ -65,9 +71,9 @@ class User(Resource):
     def delete(user_id: int):
         user = UserModel.find_by_id(user_id)
         if not user:
-            return {'message': 'User not found'}, 404
+            return {'message': USER_NOT_FOUND}, 404
         user.delete_from_db()
-        return {'message': 'User deleted successfully'}
+        return {'message': USER_DELETED}
 
 
 class Users(Resource):
