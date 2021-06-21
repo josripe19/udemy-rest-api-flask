@@ -1,14 +1,12 @@
 from flask_jwt_extended import jwt_required, create_access_token, create_refresh_token, get_jwt_identity
-from flask_restful import Resource, reqparse
+from flask_restful import Resource
+from flask import request
+from marshmallow import ValidationError
 from datetime import timedelta
 
 from models.user import UserModel
+from schemas.user import UserSchema
 from resources.security import admin_required
-
-
-_user_parser = reqparse.RequestParser()
-_user_parser.add_argument('username', type=str, required=True)
-_user_parser.add_argument('password', type=str, required=True)
 
 
 USER_CREATED = "User created successfully"
@@ -16,17 +14,21 @@ INVALID_CREDENTIALS = "Invalid credentials"
 USER_NOT_FOUND = "User not found"
 USER_DELETED = "User deleted"
 
+user_schema = UserSchema()
+
 
 class UserRegister(Resource):
     @staticmethod
     def post():
-        data = _user_parser.parse_args()
+        try:
+            user = user_schema.load(request.get_json())
+        except ValidationError as err:
+            return err.messages, 400
 
-        if UserModel.find_by_username(data['username']):
+        if UserModel.find_by_username(user.username):
             return {'message': 'The username is already used'}, 400
 
-        user = UserModel(data['username'])
-        user.set_password(data['password'])
+        user.encrypt_password()
         user.save_to_db()
 
         return {'message': USER_CREATED}, 201
@@ -35,9 +37,13 @@ class UserRegister(Resource):
 class UserLogin(Resource):
     @staticmethod
     def post():
-        data = _user_parser.parse_args()
-        user = UserModel.find_by_username(data['username'])
-        if user and user.check_password(data['password']):
+        try:
+            user_data = user_schema.load(request.get_json())
+        except ValidationError as err:
+            return err.messages, 400
+
+        user = UserModel.find_by_username(user_data.username)
+        if user and user.check_password(user_data.password):
             additional_claims = {
                 'username': user.username,
                 'admin': user.admin
@@ -63,7 +69,7 @@ class User(Resource):
         user = UserModel.find_by_id(user_id)
         if not user:
             return {'message': USER_NOT_FOUND}, 404
-        return user.json()
+        return user_schema.dump(user)
 
     @staticmethod
     @jwt_required(fresh=True)
@@ -81,7 +87,7 @@ class Users(Resource):
     @jwt_required()
     @admin_required
     def get():
-        return {'users': [user.json() for user in UserModel.get_all()]}
+        return {'users': [user_schema.dump(user) for user in UserModel.get_all()]}
 
 
 class TokenRefresh(Resource):

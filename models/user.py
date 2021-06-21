@@ -3,33 +3,20 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from db import db
 
-UserJSON = Dict[str, Union[int, str]]
-
 
 class UserModel(db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80))
-    password = db.Column(db.String(128))
+    username = db.Column(db.String(80), nullable=False, unique=True)
+    password = db.Column(db.String(128), nullable=False)
     admin = db.Column(db.Boolean, default=False)
-
-    def __init__(self, username: str, admin=False):
-        self.username = username
-        self.admin = admin
 
     def __str__(self):
         return f"<User id: {self.id}, username: {self.username}>"
 
-    def json(self) -> UserJSON:
-        return {
-            'id': self.id,
-            'username': self.username,
-            'admin': self.admin
-        }
-
-    def set_password(self, password: str):
-        self.password = generate_password_hash(password)
+    def encrypt_password(self):
+        self.password = generate_password_hash(self.password)
 
     def check_password(self, password: str) -> bool:
         return check_password_hash(self.password, password)

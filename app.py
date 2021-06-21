@@ -6,6 +6,7 @@ from resources.user import UserRegister, User, Users, UserLogin, TokenRefresh
 from resources.item import Items, Item
 from resources.store import Stores, Store
 from db import db, load_database_url
+from ma import ma
 
 
 app = Flask(__name__)
@@ -54,4 +55,5 @@ def home():
 
 if __name__ == '__main__':
     db.init_app(app)
+    ma.init_app(app)
     app.run(host='0.0.0.0')
