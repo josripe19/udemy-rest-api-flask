@@ -1,6 +1,7 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
+from marshmallow import ValidationError
 
 from resources.user import UserRegister, User, Users, UserLogin, TokenRefresh
 from resources.item import Items, Item
@@ -20,6 +21,11 @@ api = Api(app)
 @app.before_first_request
 def create_tables():
     db.create_all()
+
+
+@app.errorhandler(ValidationError)  # needs app.config['PROPAGATE_EXCEPTIONS'] = True
+def handle_marshmallow_validation(err):   # except ValidationError as err
+    return jsonify(err.messages), 400
 
 
 # app.config['JWT_AUTH_HEADER_PREFIX'] = 'Bearer'
