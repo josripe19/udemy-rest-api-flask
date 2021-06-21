@@ -1,24 +1,27 @@
-from flask_restful import Resource, reqparse
+from flask_restful import Resource
+from flask import request
+from marshmallow import ValidationError
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from models.item import ItemModel
 
+from models.item import ItemModel
+from schemas.item import ItemSchema
 
 ALREADY_EXISTS = "An item with name '{}' already exists."
 ITEM_NOT_FOUND = "Item not found"
 ITEM_DELETED = "Item deleted"
+ERROR_INSERTING = "An error occurred while inserting the item."
+
+item_schema = ItemSchema()
+item_list_schema = ItemSchema(many=True)
 
 
 class Item(Resource):
-    parser = reqparse.RequestParser()
-    parser.add_argument('price', type=float, required=True)
-    parser.add_argument('store_id', type=int, required=True)
-
     @staticmethod
     def get(name: str):
         item = ItemModel.find_item(name)
 
         if item:
-            return item.json()
+            return item_schema.dump(item)
         return {'message': ITEM_NOT_FOUND}, 404
 
     @staticmethod
@@ -27,12 +30,19 @@ class Item(Resource):
         if ItemModel.find_item(name):
             return {'message': ALREADY_EXISTS.format(name)}, 400
 
-        data = Item.parser.parse_args()
+        try:
+            item_json = request.get_json()
+            item_json['name'] = name
+            item = item_schema.load(item_json)
+        except ValidationError as err:
+            return err.messages, 400
 
-        new_item = ItemModel(name, **data)
-        new_item.upsert()
+        try:
+            item.upsert()
+        except:
+            return {"message": ERROR_INSERTING}, 500
 
-        return new_item.json(), 201
+        return item_schema.dump(item), 201
 
     @staticmethod
     @jwt_required()
@@ -46,26 +56,30 @@ class Item(Resource):
     @staticmethod
     @jwt_required()
     def put(name: str):
-        data = Item.parser.parse_args()
+        item_json = request.get_json()
         item = ItemModel.find_item(name)
 
         if item:
-            item.price = data['price']
+            item.price = item_json['price']
         else:
-            item = ItemModel(name, **data)
+            item_json['name'] = name
+            try:
+                item = item_schema.load(item_json)
+            except ValidationError as err:
+                return err.messages, 400
 
         item.upsert()
-        return item.json()
+        return item_schema.dump(item)
 
 
 class Items(Resource):
     @staticmethod
     @jwt_required(optional=True)
     def get():
-        items = [item.json() for item in ItemModel.get_all()]
+        items = ItemModel.get_all()
         if get_jwt_identity():
-            return {'items': items}
+            return {'items': item_list_schema.dump(items)}
         return {
-            'items': [item['name'] for item in items],
+            'items': [item.name for item in items],
             'message': 'More data available if you log in.'
         }
