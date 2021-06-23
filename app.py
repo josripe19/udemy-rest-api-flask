@@ -1,21 +1,18 @@
-from flask import Flask, jsonify
-from flask_restful import Api
+from flask import jsonify
 from flask_jwt_extended import JWTManager
 from marshmallow import ValidationError
 
 from resources.user import UserRegister, User, Users, UserLogin, TokenRefresh
 from resources.item import Items, Item
 from resources.store import Stores, Store
-from db import db, load_database_url
+from db import db
 from ma import ma
+from api import app, api
 
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = load_database_url()
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['PROPAGATE_EXCEPTIONS'] = True  # To allow flask propagating exception even if debug is set to false on app
-app.secret_key = 'secret'
-api = Api(app)
+@app.route('/')
+def home():
+    return "Hello World"
 
 
 @app.before_first_request
@@ -24,7 +21,7 @@ def create_tables():
 
 
 @app.errorhandler(ValidationError)  # needs app.config['PROPAGATE_EXCEPTIONS'] = True
-def handle_marshmallow_validation(err):   # except ValidationError as err
+def handle_marshmallow_validation(err):  # except ValidationError as err
     return jsonify(err.messages), 400
 
 
@@ -32,7 +29,6 @@ def handle_marshmallow_validation(err):   # except ValidationError as err
 # app.config['JWT_VERIFY_EXPIRATION'] = False
 # jwt = JWT(app, authenticate, identity)  # this generates a POST /auth endpoint
 jwt = JWTManager(app)
-
 
 # --------------  some possible callbacks  ------------------
 # @jwt.invalid_token_loader
@@ -42,21 +38,15 @@ jwt = JWTManager(app)
 # @jwt.token_in_blocklist_loader
 # @jwt.needs_fresh_token_loader
 
-
-api.add_resource(Item, '/item/<string:name>')
+api.add_resource(Item, '/items/<string:name>')
 api.add_resource(Items, '/items')
-api.add_resource(Store, '/store/<string:name>')
+api.add_resource(Store, '/stores/<string:name>')
 api.add_resource(Stores, '/stores')
-api.add_resource(UserRegister, '/register')
-api.add_resource(UserLogin, '/login')
-api.add_resource(TokenRefresh, '/refresh')
+api.add_resource(UserRegister, '/auth/register')
+api.add_resource(UserLogin, '/auth/login')
+api.add_resource(TokenRefresh, '/auth/refresh')
 api.add_resource(Users, '/users')
-api.add_resource(User, '/user/<int:user_id>')
-
-
-@app.route('/')
-def home():
-    return "Hello World"
+api.add_resource(User, '/users/<int:user_id>')
 
 
 if __name__ == '__main__':

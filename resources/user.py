@@ -1,11 +1,12 @@
 from flask_jwt_extended import jwt_required, create_access_token, create_refresh_token, get_jwt_identity
-from flask_restful import Resource
+from flask_restx import Resource
 from flask import request
 from datetime import timedelta
 
 from models.user import UserModel
-from schemas.user import UserSchema
+from schemas.user import UserSchema, userAuthSchema
 from resources.security import admin_required
+from api import api
 
 
 USER_CREATED = "User created successfully"
@@ -18,6 +19,7 @@ user_schema = UserSchema()
 
 class UserRegister(Resource):
     @staticmethod
+    @api.expect(userAuthSchema)
     def post():
         user = user_schema.load(request.get_json())
 
@@ -32,6 +34,7 @@ class UserRegister(Resource):
 
 class UserLogin(Resource):
     @staticmethod
+    @api.expect(userAuthSchema)
     def post():
         user_data = user_schema.load(request.get_json())
 
@@ -56,6 +59,7 @@ class UserLogin(Resource):
 
 class User(Resource):
     @staticmethod
+    @api.doc(security='Bearer')
     @jwt_required()
     @admin_required
     def get(user_id: int):
@@ -65,6 +69,7 @@ class User(Resource):
         return user_schema.dump(user)
 
     @staticmethod
+    @api.doc(security='Bearer')
     @jwt_required(fresh=True)
     @admin_required
     def delete(user_id: int):
@@ -77,6 +82,7 @@ class User(Resource):
 
 class Users(Resource):
     @staticmethod
+    @api.doc(security='Bearer')
     @jwt_required()
     @admin_required
     def get():
@@ -85,6 +91,7 @@ class Users(Resource):
 
 class TokenRefresh(Resource):
     @staticmethod
+    @api.doc(security='Bearer')
     @jwt_required(refresh=True)
     def post():
         current_user = UserModel.find_by_id(get_jwt_identity())

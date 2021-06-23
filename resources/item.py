@@ -1,9 +1,10 @@
-from flask_restful import Resource
+from flask_restx import Resource
 from flask import request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from models.item import ItemModel
-from schemas.item import ItemSchema
+from schemas.item import ItemSchema, itemInputSchema
+from api import api
 
 ALREADY_EXISTS = "An item with name '{}' already exists."
 ITEM_NOT_FOUND = "Item not found"
@@ -24,6 +25,8 @@ class Item(Resource):
         return {'message': ITEM_NOT_FOUND}, 404
 
     @staticmethod
+    @api.expect(itemInputSchema)
+    @api.doc(security='Bearer')
     @jwt_required()
     def post(name: str):
         if ItemModel.find_item(name):
@@ -41,6 +44,7 @@ class Item(Resource):
         return item_schema.dump(item), 201
 
     @staticmethod
+    @api.doc(security='Bearer')
     @jwt_required()
     def delete(name: str):
         item = ItemModel.find_item(name)
@@ -50,6 +54,8 @@ class Item(Resource):
         return {'message': ITEM_DELETED}
 
     @staticmethod
+    @api.expect(itemInputSchema)
+    @api.doc(security='Bearer')
     @jwt_required()
     def put(name: str):
         item_json = request.get_json()
@@ -67,6 +73,7 @@ class Item(Resource):
 
 class Items(Resource):
     @staticmethod
+    @api.doc(security='Bearer')
     @jwt_required(optional=True)
     def get():
         items = ItemModel.get_all()
