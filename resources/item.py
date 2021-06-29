@@ -5,11 +5,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.item import ItemModel
 from schemas.item import ItemSchema, itemInputSchema
 from api import api
+from libs.strings import gettext
 
-ALREADY_EXISTS = "An item with name '{}' already exists."
-ITEM_NOT_FOUND = "Item not found"
-ITEM_DELETED = "Item deleted"
-ERROR_INSERTING = "An error occurred while inserting the item."
 
 item_schema = ItemSchema()
 item_list_schema = ItemSchema(many=True)
@@ -22,7 +19,7 @@ class Item(Resource):
 
         if item:
             return item_schema.dump(item)
-        return {'message': ITEM_NOT_FOUND}, 404
+        return {'message': gettext("item_not_found")}, 404
 
     @staticmethod
     @api.expect(itemInputSchema)
@@ -30,7 +27,7 @@ class Item(Resource):
     @jwt_required()
     def post(name: str):
         if ItemModel.find_item(name):
-            return {'message': ALREADY_EXISTS.format(name)}, 400
+            return {'message': gettext("item_name_exists").format(name)}, 400
 
         item_json = request.get_json()
         item_json['name'] = name
@@ -39,7 +36,7 @@ class Item(Resource):
         try:
             item.upsert()
         except:
-            return {"message": ERROR_INSERTING}, 500
+            return {"message": gettext("item_error_inserting")}, 500
 
         return item_schema.dump(item), 201
 
@@ -51,7 +48,7 @@ class Item(Resource):
         if item:
             item.delete()
 
-        return {'message': ITEM_DELETED}
+        return {'message': gettext("item_deleted")}
 
     @staticmethod
     @api.expect(itemInputSchema)

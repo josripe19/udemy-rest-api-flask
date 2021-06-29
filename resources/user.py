@@ -7,12 +7,7 @@ from models.user import UserModel
 from schemas.user import UserSchema, userAuthSchema
 from resources.security import admin_required
 from api import api
-
-
-USER_CREATED = "User created successfully"
-INVALID_CREDENTIALS = "Invalid credentials"
-USER_NOT_FOUND = "User not found"
-USER_DELETED = "User deleted"
+from libs.strings import gettext
 
 user_schema = UserSchema()
 
@@ -29,7 +24,7 @@ class UserRegister(Resource):
         user.encrypt_password()
         user.save_to_db()
 
-        return {'message': USER_CREATED}, 201
+        return {'message': gettext("user_registered")}, 201
 
 
 class UserLogin(Resource):
@@ -54,7 +49,7 @@ class UserLogin(Resource):
                        'access_token': access_token,
                        'refresh_token': refresh_token
                    }, 200
-        return {'message': INVALID_CREDENTIALS}, 401
+        return {'message': gettext("user_invalid_credentials")}, 401
 
 
 class User(Resource):
@@ -65,7 +60,7 @@ class User(Resource):
     def get(user_id: int):
         user = UserModel.find_by_id(user_id)
         if not user:
-            return {'message': USER_NOT_FOUND}, 404
+            return {'message': gettext("user_not_found")}, 404
         return user_schema.dump(user)
 
     @staticmethod
@@ -75,9 +70,9 @@ class User(Resource):
     def delete(user_id: int):
         user = UserModel.find_by_id(user_id)
         if not user:
-            return {'message': USER_NOT_FOUND}, 404
+            return {'message': gettext("user_not_found")}, 404
         user.delete_from_db()
-        return {'message': USER_DELETED}
+        return {'message': gettext("user_deleted")}
 
 
 class Users(Resource):
