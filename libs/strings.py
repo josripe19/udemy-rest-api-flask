@@ -14,4 +14,10 @@ def gettext(name: str):
     return cached_strings[name]
 
 
+def set_locale(locale: str):
+    global cached_strings
+    with open(f"strings/{locale}.json") as f:
+        cached_strings = json.load(f)
+
+
 refresh()
