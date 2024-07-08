@@ -1,0 +1,2 @@
+Creating a documentation file here.
+This document is just to test how feasable is editing documents on github.
